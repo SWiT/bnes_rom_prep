@@ -8,7 +8,7 @@ import StringIO
 
 romspath = "/media/sf_SNES/rom"
 imagespath = "/media/sf_SNES/images"
-gamesxmlfile = "/media/sf_SNES/games.bak.xml"
+inputxmlfile = "default_games.xml"
 outputxmlfile = "/media/sf_SNES/games.xml"
 sneslisturl = "http://en.wikipedia.org/wiki/List_of_Super_Nintendo_Entertainment_System_games"
 coverspath = "/media/sf_SNES/SNES Shrunken Spine (762)/USA (601 + 65 Alts)"
@@ -34,11 +34,11 @@ rows = sneslistsoup.select('table.sortable tr')
 
 pattern = re.compile("\(.+\)|\[.+\]|[#!,]|SNES|- |.smc|.gz", re.IGNORECASE)    
 
-fpxml = open(gamesxmlfile, 'r')
-gamesxml = fpxml.read()
+fpxml = open(inputxmlfile, 'r')
+inputxml = fpxml.read()
 fpxml.close()
 
-outputxml = gamesxml[0:gamesxml.index("<snes>")]
+outputxml = inputxml[0:inputxml.index("<snes>")]
 outputxml += "<snes>\n"
 roms = os.listdir(romspath)
 roms.sort()
@@ -53,6 +53,7 @@ for rom in roms:
             f_out.close()
             f_in.close()
             os.remove(rom)  #delete the uncompressed rom
+            rom += ".gz"
     
     title = pattern.sub("",rom).strip()
     wordlist = title.replace("-"," ").split()
