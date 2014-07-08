@@ -4,7 +4,7 @@ import urllib
 import bs4
 import re
 import Image
-import StringIO
+#import StringIO
 
 romspath = "/media/sf_SNES/rom"
 imagespath = "/media/sf_SNES/images"
@@ -27,7 +27,7 @@ def escape(s):
     for code in htmlCodes:
         s = s.replace(code[0], code[1])
     return s  
-    
+  
 response = urllib.urlopen(sneslisturl)
 sneslistsoup = bs4.BeautifulSoup(response.read())
 rows = sneslistsoup.select('table.sortable tr')
@@ -56,7 +56,7 @@ for rom in roms:
             rom += ".gz"
     
     title = pattern.sub("",rom).strip()
-    wordlist = title.replace("-"," ").split()
+    wordlist = title.replace("-"," ").lower().split()
     wordlist = wordlist_remove(wordlist,"The")
     wordlist = wordlist_remove(wordlist,"the")
     wordlist = wordlist_remove(wordlist,"of")
@@ -68,7 +68,6 @@ for rom in roms:
     foundatag = None
     year = ""
     genre = ""
-    imgfile = ""
     for row in rows:
         rowcount  = 0;
         cells = row.find_all("td")
@@ -84,11 +83,11 @@ for rom in roms:
                 else:
                     t += " "+itag.text.lower()
             for w in wordlist:
-                if w.lower() in t:
+                if w in t:
                     rowcount += 1
-                elif w.lower() in t.replace(" ",""):
+                elif w in t.replace(" ",""):
                     rowcount += 1
-                elif w.lower() in t.replace("-",""):
+                elif w in t.replace("-",""):
                     rowcount += 1
             if rowcount > mostwords:
                 mostwords = rowcount
@@ -115,28 +114,40 @@ for rom in roms:
         description = title+" !!!"
         print "!!!", foundatag, wordlist
     
-    #print rom
+    print rom
     print title
     print description.encode('utf-8')    
     print year
     if genre != "": print genre
-    if foundatag != None: 
-        #Find the cover art or screen shot image
-        gameurl = "http://en.wikipedia.org"+foundatag.get("href")
-        print gameurl
-        imgfile = imagespath+"/"+rom+".png"
-        if not os.path.isfile(imgfile):
-            #No image, try to download and resize one.
-            gamesoup = bs4.BeautifulSoup(urllib.urlopen(gameurl).read())
-            imgs = gamesoup.select("table.infobox a.image img")
-            if len(imgs)>0:
-                imgurl = "http:"+imgs[0].get("src")
-                print imgurl
-                imgdata = StringIO.StringIO(urllib.urlopen(imgurl).read())
-                img = Image.open(imgdata)
+    
+    imgfile = imagespath+"/"+rom+".png"
+    if not os.path.isfile(imgfile):        
+        if coverspath != None:
+            covers = os.listdir(coverspath)
+            covers.sort()
+            #print "-----"
+            mostwords = 0
+            foundcover = None
+            for cover in covers:
+                #print cover
+                cover = cover.lower()
+                coverwordcount = 0               
+                for w in wordlist:
+                    if w in cover:
+                        coverwordcount += 1
+                if coverwordcount > mostwords:
+                    mostwords = coverwordcount
+                    foundcover = cover
+            if foundcover != None:
+                print foundcover
+                img = Image.open(coverspath+"/"+foundcover)
+                width, height = img.size
+                r_offset = 7
+                l = width-(height*145/200) #left boundary
+                img = img.crop((l-r_offset,0,width-r_offset,height))
+                img = img.rotate(90)
                 img.thumbnail((200,145))
                 img.save(imgfile)
-        
 
     outputxml += "  <game>\n"
     outputxml += "    <title>"+escape(title)+"</title>\n"
@@ -157,7 +168,7 @@ for rom in roms:
     outputxml += "  </game>\n"
     
     numroms += 1
-    #if numroms >= 10: #only do some of the files while testing
+    #if numroms >= 1: #only do some of the files while testing
     #    break;
 
 outputxml += "</snes>\n"    
