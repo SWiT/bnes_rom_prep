@@ -4,14 +4,14 @@ import urllib
 import bs4
 import re
 import Image
-#import StringIO
 
 romspath = "/media/sf_SNES/rom"
 imagespath = "/media/sf_SNES/images"
-inputxmlfile = "default_games.xml"
-outputxmlfile = "/media/sf_SNES/games.xml"
-sneslisturl = "http://en.wikipedia.org/wiki/List_of_Super_Nintendo_Entertainment_System_games"
 coverspath = "/media/sf_SNES/SNES Shrunken Spine (762)/USA (601 + 65 Alts)"
+outputxmlfile = "/media/sf_SNES/games.xml"
+
+inputxmlfile = "default_games.xml"
+sneslisturl = "http://en.wikipedia.org/wiki/List_of_Super_Nintendo_Entertainment_System_games"
 
 def wordlist_remove(wordlist, val):
     try:
